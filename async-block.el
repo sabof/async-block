@@ -109,11 +109,11 @@ same file as the definition of this macro."
 
     ;; The above can also be written like this:
 
-    (ab-wait 1)
+    (ab-wait 0.5)
 
     ;; ab-wait may have a body after the first argument. In that case the queue
     ;; will proceed only when it evaluates to a non-nil value. The test will be
-    ;; repeated every INTERVAL (the first value)
+    ;; repeated every INTERVAL (the first argument)
 
     (let* (done)
       (url-retrieve "http://yahoo.com"
