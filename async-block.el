@@ -3,7 +3,8 @@
 (require 'cl-lib)
 
 (defmacro async-block (&rest forms)
-  "Executes the top-level forms one by one.
+  "This macro will only work if `lexical-binding' is enabled.
+It executes the top-level forms one by one.
 
 A function `ab-queue', as well as several higher-level constructs
 are available within the body of this macro. `ab-queue' has the
@@ -22,9 +23,9 @@ step leave a non-zero counter, the queue won't progress. A
 decreasing call to `ab-queue' has to be the last thing a step
 does, otherwise the result might not be what you expect.
 
-You can find examples `ab-queue' usage, as well as examples for
-`ab-wait', `ab-while', `ab-with-queue', `ab-dequeue', in the
-same file as the definition of this function."
+You can find examples of `ab-queue' usage, as well as examples
+for `ab-wait', `ab-while', `ab-with-queue', `ab-dequeue', in the
+same file as the definition of this macro."
   (let* (( next-action (cl-gensym))
          ( actions (cl-gensym))
          ( ab-queue-var (cl-gensym))
@@ -51,8 +52,8 @@ same file as the definition of this function."
               ( ab-wait (interval &rest body)
                 (if (not body)
                     `(run-with-timer ,interval nil (ab-queue))
-                  (let (( interval-sym (gensym))
-                        ( predicate-sym (gensym)))
+                  (let (( interval-sym (cl-gensym))
+                        ( predicate-sym (cl-gensym)))
                     `(let ((,interval-sym ,interval))
                        (cl-labels (( ,predicate-sym ()
                                      ,@body)
@@ -141,7 +142,7 @@ same file as the definition of this function."
         (message "while: %s" var)
         (cl-decf var)))
 
-    (ab wait 1)
+    (ab-wait 1)
 
     (message "Finish"))
 
