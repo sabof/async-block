@@ -112,7 +112,8 @@ same file as the definition of this macro."
     (ab-wait 1)
 
     ;; ab-wait may have a body after the first argument. In that case the queue
-    ;; will proceed only when it evaluates to a non-nil value.
+    ;; will proceed only when it evaluates to a non-nil value. The test will be
+    ;; repeated every INTERVAL (the first value)
 
     (let* (done)
       (url-retrieve "http://yahoo.com"
@@ -125,7 +126,7 @@ same file as the definition of this macro."
 
     (ab-wait 1)
 
-    ;; This format is possible, when you want to have a lambda callback.
+    ;; This format is possible when you want to have a lambda callback.
 
     (ab-with-queue
       (run-with-timer 1 nil (lambda ()
