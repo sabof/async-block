@@ -45,9 +45,9 @@ same file as the definition of this function."
             ( ab-dequeue ()
               (ab-queue -1)))
          (cl-macrolet
-             (( ab-with-queue (&rest body)
-                              `(progn (ab-queue)
-                                      ,@body))
+             (( \ab-with-queue (&rest body)
+                `(progn (ab-queue)
+                        ,@body))
               ( ab-wait (interval &rest body)
                 (if (not body)
                     `(run-with-timer ,interval nil (ab-queue))
@@ -63,14 +63,14 @@ same file as the definition of this function."
                                                        nil #'func))))
                          (ab-queue)
                          (func))))))
-              ( ab-while (interval test &rest body)
-                  `(ab-wait ,interval
-                     (if ,test
-                         (progn
-                           ,@body
-                           nil)
-                       t)
-                     )))
+              ( \ab-while (interval test &rest body)
+                `(ab-wait ,interval
+                   (if ,test
+                       (progn
+                         ,@body
+                         nil)
+                     t)
+                   )))
            (let ((,actions ,actions-value))
              (funcall (setq ,next-action
                             (lambda ()
