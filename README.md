@@ -32,23 +32,16 @@ A macro that allows transparent integration of synchronous, and asynchronous cod
     (ab-wait 1
       done))
 
-
   (ab-wait 1)
 
-  ;; Result processing can also be done like this:
+  ;; This format is probably better when you want to have a lambda callback.
 
-  (url-retrieve "http://google.com" (ab-queue))
-  (re-search-forward "<title>\\([^<]+\\)")
-  (message (match-string 1))
-
-  (ab-wait 1)
-
-  ;; This format is possible when you want to have a lambda callback.
-
-  (ab-with-queue
-    (run-with-timer 1 nil (lambda ()
-                            (message "with-queue/dequeue")
-                            (ab-dequeue))))
+  (ab-enqueue
+    (url-retrieve "http://google.com"
+                   (lambda (&rest ignore)
+                     (re-search-forward "<title>\\([^<]+\\)")
+                     (message (match-string 1))
+                     (ab-dequeue))))
 
   (ab-wait 1)
 
