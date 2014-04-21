@@ -2,9 +2,13 @@
 
 (require 'cl-lib)
 
-(defun ab-queue (&optional ammount))
+(defun ab-queue (&optional ammount)
+  ;; Stub, to enable eldoc and documentation
+  )
 
-(defun ab-dequeue ())
+(defun ab-dequeue ()
+  ;; Stub, to enable eldoc and documentation
+  )
 
 (defmacro ab-enqueue (&rest body)
   `(progn (ab-queue)
@@ -48,8 +52,7 @@
          (progn
            ,@body
            nil)
-       t)
-     ))
+       t)))
 
 (put 'ab-while 'lisp-indent-function
      2)
@@ -82,29 +85,29 @@ FIXME: move elsewhere.
 You can find examples of `ab-queue' usage, as well as examples
 for `ab-wait', `ab-while', `ab-enqueue', `ab-dequeue', in the
 same file as the definition of this macro."
-  (let* (( next-action (cl-gensym))
-         ( ab-queue-var (cl-gensym))
+  (let* (( next-action-sym (cl-gensym))
+         ( ab-queue-var-sym (cl-gensym))
          ( actions-value
            (cons 'list (mapcar (lambda (form)
                                  (macroexpand-all
                                   `(lambda nil ,form)))
                                forms))))
-    `(let* ((,ab-queue-var 0)
-            ,next-action)
+    `(let* ((,ab-queue-var-sym 0)
+            ,next-action-sym)
        (cl-labels
            (( ab-queue (&optional ammount)
-              (cl-incf ,ab-queue-var (or ammount 1))
-              (when (zerop ,ab-queue-var)
-                (funcall ,next-action))
+              (cl-incf ,ab-queue-var-sym (or ammount 1))
+              (when (zerop ,ab-queue-var-sym)
+                (funcall ,next-action-sym))
               (lambda (&rest ignore)
                 (ab-queue -1)))
             ( ab-dequeue ()
               (ab-queue -1)))
          (let ((actions ,actions-value)
                (cur-buf (current-buffer)))
-           (funcall (setq ,next-action
+           (funcall (setq ,next-action-sym
                           (lambda ()
-                            (while (and actions (zerop ,ab-queue-var))
+                            (while (and actions (zerop ,ab-queue-var-sym))
                               (with-current-buffer
                                   (if (buffer-live-p cur-buf)
                                       cur-buf
@@ -117,6 +120,11 @@ same file as the definition of this macro."
      '(&body))
 (put 'async-block 'lisp-indent-function
      0)
+
+;; FIXME: Allow splitting the sequence accross multiple bodies
+;; FIXME: Documentation
+;; FIXME: Recursive function
+;; FIXME: Error handling can be improved?
 
 (provide 'async-block)
 ;;; async-block.el ends here
