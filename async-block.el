@@ -76,9 +76,12 @@ FIXME: Use link syntax
 
 understand how it works, have a look at documentation for `ab-queue'.
 
+When quoting `ab-*' functions, the function quote (#') must be used.
+
 A function `ab-queue', as well as several higher-level constructs
 are available within the body of this macro. `ab-queue' has the
 following signature:
+
 
 FIXME: move elsewhere.
 
@@ -87,12 +90,15 @@ for `ab-wait', `ab-while', `ab-enqueue', `ab-dequeue', in the
 same file as the definition of this macro."
   (let* (( next-action-sym (cl-gensym))
          ( ab-queue-var-sym (cl-gensym))
+         ( current-buffer-sym (cl-gensym))
+         ( current-buffer-accessor-sym (cl-gensym))
          ( actions-value
            (cons 'list (mapcar (lambda (form)
                                  (macroexpand-all
                                   `(lambda nil ,form)))
                                forms))))
     `(let* ((,ab-queue-var-sym 0)
+            (,current-buffer-sym (current-buffer))
             ,next-action-sym)
        (cl-labels
            (( ab-queue (&optional ammount)
@@ -104,18 +110,24 @@ same file as the definition of this macro."
               (lambda (&rest ignore)
                 (ab-queue -1)))
             ( ab-dequeue ()
-              (ab-queue -1)))
-         (let ((actions ,actions-value)
-               (cur-buf (current-buffer)))
+              (ab-queue -1))
+            ( ,current-buffer-accessor-sym (&rest args)
+              (if (length args)
+                  (setq ,current-buffer-sym (car args))
+                ,current-buffer-sym))
+            ( ab-seed ()
+              (list #'ab-queue
+                    #',current-buffer-accessor-sym)))
+         (let ((actions ,actions-value))
            (funcall (setq ,next-action-sym
                           (lambda ()
                             (while (and actions (zerop ,ab-queue-var-sym))
                               (with-current-buffer
-                                  (if (buffer-live-p cur-buf)
-                                      cur-buf
+                                  (if (buffer-live-p ,current-buffer-sym)
+                                      ,current-buffer-sym
                                     (current-buffer))
                                 (funcall (pop actions))
-                                (setq cur-buf (current-buffer)))))))
+                                (setq ,current-buffer-sym (current-buffer)))))))
            )))))
 
 (put 'async-block 'common-lisp-indent-function
@@ -123,25 +135,34 @@ same file as the definition of this macro."
 (put 'async-block 'lisp-indent-function
      0)
 
-(defmacro async-block-continue (parent-queue &rest body)
-  (let ((parent-queue-sym (cl-gensym)))
-    `(let ((,parent-queue-sym ,parent-queue))
-       (async-block
-         (funcall ,parent-queue-sym 1)
-         ,@body
-         (funcall ,parent-queue-sym -1)
-         ))))
+(defmacro async-block-continue (seed &rest body)
+  "This macro allows splitting of async blocks across multiple funcitons.
+Like a regular `async-block', but the return value of `ab-seed' from the caller
+must be supplied.
+
+Should SEED be nil, acts like regular `async-block'"
+  (let ((seed-sym (cl-gensym)))
+    `(let ((,seed-sym ,seed))
+       (if (not ,seed-sym)
+           (async-block
+             ,@body)
+         (async-block
+           (funcall (cl-first ,seed-sym) 1)
+           ,@body
+           (funcall (cl-second ,seed-sym) (current-buffer))
+           (funcall (cl-first ,seed-sym) -1)
+           )))))
 
 (put 'async-block-continue 'common-lisp-indent-function
      '(4 &body))
 (put 'async-block-continue 'lisp-indent-function
      1)
 
-;; FIXME: Allow splitting the sequence accross multiple bodies
 ;; FIXME: Documentation
 ;; FIXME: Recursive function
 ;; FIXME: Error handling can be improved?
-;; FIXME: ab-receive/ab-return?
+;; FIXED: Use ab-seed to transmit ab-queue
+;; FIXME: Add font-locking
 
 (provide 'async-block)
 ;;; async-block.el ends here

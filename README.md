@@ -5,6 +5,28 @@ A macro that allows transparent integration of synchronous, and asynchronous cod
 ## Example
 
 ```lisp
+(defun async-block-test2 (seed)
+  (async-block-continue seed
+    (ab-wait 0.5)
+    (message "c Start")
+    (ab-wait 0.5)
+    (let ((var 5))
+      (ab-while 1 (not (zerop var))
+        (message "while: %s" var)
+        (cl-decf var)))
+    (ab-wait 0.5)
+    (set-buffer (get-buffer "async-block.el"))
+    (message "c End")))
+
+(defun async-block-test ()
+  (async-block
+    (ab-wait 0.5)
+    (message "Start %s" (current-buffer))
+    (async-block-test2 (ab-seed))
+    (ab-wait 0.5)
+    (message "End %s" (current-buffer))
+    ))
+
 (async-block
   (ab-wait 0.5)
 
