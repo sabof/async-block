@@ -3,14 +3,24 @@
 (require 'cl-lib)
 
 (defun ab-queue (&optional ammount)
-  ;; Stub, to enable eldoc and documentation
-  )
+  "When called with no arguments, it increments an internal counter
+by 1, and returns a function that will decrement it by one. If
+AMMOUT is provided, the counter will be changed by that number
+instead.
+
+Should the counter be 0 after the change, the next form is
+executed. A step may contain multiple `ab-queue' calls. Should a
+step leave a non-zero counter, the queue won't progress. A
+decreasing call to `ab-queue' has to be the last thing a step
+does, otherwise the result might not be what you expect."
+  (error "Stub which enables eldoc and documentation"))
 
 (defun ab-dequeue ()
-  ;; Stub, to enable eldoc and documentation
-  )
+  "Same as \(ab-queue -1\)"
+  (error "Stub which enables eldoc and documentation"))
 
 (defmacro ab-enqueue (&rest body)
+  "Increase the queue variable by 1, and execute the BODY"
   `(progn (ab-queue)
           ,@body))
 
@@ -60,25 +70,15 @@
      '(4 4 &body))
 
 (defmacro async-block (&rest forms)
-  "This macro will only work if `lexical-binding' is enabled.
-It executes the top-level forms one by one.
+  "This macro will only work if `lexical-binding' is enabled. To better
+
+FIXME: Use link syntax
+
+understand how it works, have a look at documentation for `ab-queue'.
 
 A function `ab-queue', as well as several higher-level constructs
 are available within the body of this macro. `ab-queue' has the
 following signature:
-
-  (ab-queue &optional AMMOUNT)
-
-When called with no arguments, it increments an internal counter
-by 1, and returns a function that will decrement it by one. If
-AMMOUT is provided, the counter will be changed by that number
-instead.
-
-Should the counter be 0 after the change, the next form is
-executed. A step may contain multiple `ab-queue' calls. Should a
-step leave a non-zero counter, the queue won't progress. A
-decreasing call to `ab-queue' has to be the last thing a step
-does, otherwise the result might not be what you expect.
 
 FIXME: move elsewhere.
 
