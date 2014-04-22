@@ -143,15 +143,14 @@ must be supplied.
 Should SEED be nil, acts like regular `async-block'"
   (let ((seed-sym (cl-gensym)))
     `(let ((,seed-sym ,seed))
-       (if (not ,seed-sym)
-           (async-block
-             ,@body)
-         (async-block
-           (funcall (cl-first ,seed-sym) 1)
-           ,@body
+       (async-block
+         (when ,seed-sym
+           (funcall (cl-first ,seed-sym) 1))
+         ,@body
+         (when ,seed-sym
            (funcall (cl-second ,seed-sym) (current-buffer))
-           (funcall (cl-first ,seed-sym) -1)
-           )))))
+           (funcall (cl-first ,seed-sym) -1))
+         ))))
 
 (put 'async-block-continue 'common-lisp-indent-function
      '(4 &body))
