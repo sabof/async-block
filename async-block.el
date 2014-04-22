@@ -97,6 +97,8 @@ same file as the definition of this macro."
        (cl-labels
            (( ab-queue (&optional ammount)
               (cl-incf ,ab-queue-var-sym (or ammount 1))
+              (when (cl-minusp ,ab-queue-var-sym)
+                (error "The queue variable may not go below 0"))
               (when (zerop ,ab-queue-var-sym)
                 (funcall ,next-action-sym))
               (lambda (&rest ignore)
@@ -121,10 +123,25 @@ same file as the definition of this macro."
 (put 'async-block 'lisp-indent-function
      0)
 
+(defmacro async-block-continue (parent-queue &rest body)
+  (let ((parent-queue-sym (cl-gensym)))
+    `(let ((,parent-queue-sym ,parent-queue))
+       (async-block
+         (funcall ,parent-queue-sym 1)
+         ,@body
+         (funcall ,parent-queue-sym -1)
+         ))))
+
+(put 'async-block-continue 'common-lisp-indent-function
+     '(4 &body))
+(put 'async-block-continue 'lisp-indent-function
+     1)
+
 ;; FIXME: Allow splitting the sequence accross multiple bodies
 ;; FIXME: Documentation
 ;; FIXME: Recursive function
 ;; FIXME: Error handling can be improved?
+;; FIXME: ab-receive/ab-return?
 
 (provide 'async-block)
 ;;; async-block.el ends here
