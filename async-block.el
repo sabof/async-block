@@ -22,6 +22,7 @@ does, otherwise the result might not be what you expect."
 
 (defmacro ab-enqueue (&rest body)
   "Increase the queue variable by 1, and execute the BODY"
+  (declare (indent 0))
   `(progn (ab-queue)
           ,@body))
 
