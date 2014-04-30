@@ -3,6 +3,7 @@
 (require 'cl-lib)
 
 (defun ab-queue (&optional ammount)
+  (declare (indent 0))
   "When called with no arguments, it increments an internal counter
 by 1, and returns a function that will decrement it by one. If
 AMMOUT is provided, the counter will be changed by that number
@@ -24,12 +25,8 @@ does, otherwise the result might not be what you expect."
   `(progn (ab-queue)
           ,@body))
 
-(put 'ab-enqueue 'common-lisp-indent-function
-     '(&body))
-(put 'ab-enqueue 'lisp-indent-function
-     0)
-
 (defmacro ab-wait (interval &rest body)
+  (declare (indent 1))
   (if (not body)
       `(run-with-timer ,interval nil (ab-queue))
     (let (( interval-sym (cl-gensym))
@@ -51,23 +48,14 @@ does, otherwise the result might not be what you expect."
            (ab-queue)
            (func))))))
 
-(put 'ab-wait 'common-lisp-indent-function
-     '(4 &body))
-(put 'ab-wait 'lisp-indent-function
-     1)
-
 (defmacro ab-while (interval test &rest body)
+  (declare (indent 2))
   `(ab-wait ,interval
      (if ,test
          (progn
            ,@body
            nil)
        t)))
-
-(put 'ab-while 'lisp-indent-function
-     2)
-(put 'ab-while 'common-lisp-indent-function
-     '(4 4 &body))
 
 (defmacro async-block (&rest forms)
   "This macro will only work if `lexical-binding' is enabled. To better
@@ -88,6 +76,7 @@ FIXME: move elsewhere.
 You can find examples of `ab-queue' usage, as well as examples
 for `ab-wait', `ab-while', `ab-enqueue', `ab-dequeue', in the
 same file as the definition of this macro."
+  (declare (indent 0))
   (let* (( next-action-sym (cl-gensym))
          ( ab-queue-var-sym (cl-gensym))
          ( current-buffer-sym (cl-gensym))
@@ -130,17 +119,13 @@ same file as the definition of this macro."
                                 (setq ,current-buffer-sym (current-buffer)))))))
            )))))
 
-(put 'async-block 'common-lisp-indent-function
-     '(&body))
-(put 'async-block 'lisp-indent-function
-     0)
-
 (defmacro async-block-continue (seed &rest body)
-  "This macro allows splitting of async blocks across multiple funcitons.
-Like a regular `async-block', but the return value of `ab-seed' from the caller
-must be supplied.
+  "Allows splitting of async blocks across multiple funcitons.
+If return value of `ab-seed' from the caller is supplied, the calling block
+will wait until the execution of this block is complete.
 
 Should SEED be nil, acts like regular `async-block'"
+  (declare (indent 1))
   (let ((seed-sym (cl-gensym)))
     `(let ((,seed-sym ,seed))
        (async-block
@@ -152,16 +137,11 @@ Should SEED be nil, acts like regular `async-block'"
            (funcall (cl-first ,seed-sym) -1))
          ))))
 
-(put 'async-block-continue 'common-lisp-indent-function
-     '(4 &body))
-(put 'async-block-continue 'lisp-indent-function
-     1)
-
-;; FIXME: Documentation
-;; FIXME: Recursive function
-;; FIXME: Error handling can be improved?
 ;; FIXED: Use ab-seed to transmit ab-queue
 ;; FIXME: Add font-locking
+;; FIXME: Documentation
+;; FIXME: Error handling can be improved?
+;; FIXME: Recursive function
 
 (provide 'async-block)
 ;;; async-block.el ends here
